@@ -1,0 +1,553 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////// practical 1 ///////////////////////////////
+# Write a Python program to plot a few activation functions that are being used in neural networks.
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def relu(x):
+    return np.maximum(0, x)
+
+def tanh(x):
+    return np.tanh(x)
+
+def softmax(x):
+    exp_x = np.exp(x - np.max(x))
+    return exp_x / np.sum(exp_x)
+
+# Define range for x values
+x = np.linspace(-10, 10, 100)
+
+# Calculate y values for each activation function
+y_sigmoid = sigmoid(x)
+y_relu = relu(x)
+y_tanh = tanh(x)
+y_softmax = softmax(x)
+
+# Plotting
+plt.figure(figsize=(12, 6))
+
+plt.subplot(2, 2, 1)
+plt.plot(x, y_sigmoid, label='Sigmoid', color='b')
+plt.title('Sigmoid')
+plt.grid(True)
+
+plt.subplot(2, 2, 2)
+plt.plot(x, y_relu, label='ReLU', color='r')
+plt.title('ReLU')
+plt.grid(True)
+
+plt.subplot(2, 2, 3)
+plt.plot(x, y_tanh, label='Tanh', color='g')
+plt.title('Tanh')
+plt.grid(True)
+
+plt.subplot(2, 2, 4)
+plt.plot(x, y_softmax, label='Softmax', color='c')
+plt.title('Softmax')
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+/////////////////////////// practical 2 //////////////////////
+#. Generate ANDNOT function using McCulloch-Pitts neural net by a python program.
+
+
+class McCullochPittsNeuron:
+    def __init__(self, weights, threshold):
+        self.weights = weights
+        self.threshold = threshold
+
+    def activate(self, inputs):
+        weighted_sum = sum([w * x for w, x in zip(self.weights, inputs)])
+        return 1 if weighted_sum >= self.threshold else 0
+
+def ANDNOT(x1, x2):
+    weights = [1, -1]  # Weights for inputs x1 and x2
+    threshold = 0  # Threshold for the neuron to fire
+    neuron = McCullochPittsNeuron(weights, threshold)
+    return neuron.activate([x1, x2])
+
+# Get user input for x1 and x2
+x1 = int(input("Enter the first input (0 or 1): "))
+x2 = int(input("Enter the second input (0 or 1): "))
+
+# Call ANDNOT function with user inputs
+result = ANDNOT(x1, x2)
+
+# Display the result
+print(f"ANDNOT({x1}, {x2}) = {result}")
+
+
+
+
+
+
+
+/////////////////// Practical 3////////////////////////////
+#Write a Python Program using Perceptron Neural Network to recognise even and odd numbers.
+Given numbers are in ASCII form 0 to 9
+
+
+from sklearn.linear_model import Perceptron
+import numpy as np
+
+input_vec = np.array([[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]])
+output_vec = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+
+perceptron = Perceptron(max_iter = 100)
+perceptron.fit(input_vec, output_vec)
+
+
+test_data = [[2]]
+prediction = perceptron.predict(test_data)
+
+if prediction == 0:
+    print(f"{test_data[0][0]} is EVEN")
+else:
+    print(f"{test_data[0][0]} is ODD")
+    
+    
+user_input = [[int(input("Enter a number : "))]]
+prediction = perceptron.predict(user_input)
+if prediction == 0:
+    print(f"{user_input[0][0]} is EVEN")
+else:
+    print(f"{user_input[0][0]} is ODD")
+    
+    
+
+
+
+
+
+
+
+///////////////////////////  practical - 4 /////////////////////
+# Write a suitable example to demonstrate the perceptron learning law with its decision regions
+# using python. Give the output in graphical form. 
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+
+# load iris dataset 
+iris = load_iris()
+
+# extract sepal length and petal length features 
+X = iris.data[:, [0, 2]]
+y = iris.target
+w = np.zeros(2) #[0.0 , 0.0]  # to give weightage
+b = 0                     # to shift the decision boundary
+lr = 0.1        # learning rate
+epochs = 50
+
+# setosa is class 0, versicolor is class 1 
+y = np.where(y == 0, 0, 1)
+
+# define perceptron function 
+def perceptron(x, w, b):
+    # calculate weighted sum of inputs 
+    z = np.dot(x, w) + b
+    # apply step function
+    return np.where(z >= 0, 1, 0)
+
+# train the perceptron
+for epoch in range(epochs): 
+    for i in range(len(X)):
+        x = X[i] 
+        target = y[i]
+        output = perceptron(x, w, b) 
+        error = target - output
+        # the algorithm assigns more weight to features that contribute more to the error.
+        w += lr * error * x
+        # The bias affects the decision boundary's position and allows for shifting it 
+        # up or down without changing the weights.
+        b += lr * error
+
+#model train --- adjusted weights and bias 
+
+# plot decision boundary
+x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5 
+xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.02), np.arange(y_min, y_max, 0.02))
+
+Z = perceptron(np.c_[xx.ravel(), yy.ravel()], w, b)
+Z = Z.reshape(xx.shape)
+
+#plot decision boundary
+plt.contourf(xx, yy, Z, cmap=plt.cm.Paired)
+plt.xlabel('Sepal length')
+plt.ylabel('Petal length') 
+plt.title('Perceptron decision regions') 
+plt.show()
+
+
+
+
+
+
+
+
+
+\\\\\\\\\\\\\\\\\\\\\\\\  practical - 5 ////////////////////
+#Write a python program for bidirectional associative memory with two pairs of vectors
+
+import numpy as np
+
+# define two pairs of vectors 
+x1 = np.array([1, 1, 1, -1])
+y1 = np.array([1, -1])
+x2 = np.array([-1, -1, 1, 1]) 
+y2 = np.array([-1, 1])
+
+# compute weight matrix W
+W = np.outer(y1, x1) + np.outer(y2, x2)
+
+# define BAM function 
+def bam(x):
+    y = W @ x
+    return np.where(y>=0, 1, -1)
+
+# test BAM with inputs
+x_test = np.array([1, -1, -1, -1]) 
+y_test = bam(x_test)
+
+# print output 
+print("Input x: ", x_test) 
+print("Output y: ", y_test)
+
+
+
+
+
+
+
+
+
+
+/////////////////////// practical - 6 ///////////////////
+#Implement Artificial Neural Network training process in Python by using forward propagation,
+#backpropagation.
+
+import tensorflow as tf
+import numpy as np
+
+# Input data
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+# Target output data
+y = np.array([[0], [1], [1], [0]])
+
+# Define the neural network architecture
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(2,)),
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(X, y, epochs=10)
+
+# Test the trained model
+predicted_output = model.predict(X)
+print("Predicted Output after training:")
+print(predicted_output)
+
+
+//////////////////////////////////////// forward propagation ////////////
+
+import numpy as np
+
+class NeuralNetwork:
+    def __init__(self, input_size, hidden_size, output_size):
+        # Initialize weights and biases randomly
+        self.weights_input_hidden = np.random.randn(input_size, hidden_size)
+        self.biases_input_hidden = np.zeros(hidden_size)
+        self.weights_hidden_output = np.random.randn(hidden_size, output_size)
+        self.biases_hidden_output = np.zeros(output_size)
+
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def forward_propagation(self, X):
+        # Input to hidden layer
+        hidden_input = np.dot(X, self.weights_input_hidden) + self.biases_input_hidden
+        hidden_output = self.sigmoid(hidden_input)
+        # Hidden to output layer
+        output_input = np.dot(hidden_output, self.weights_hidden_output) + self.biases_hidden_output
+        predicted_output = self.sigmoid(output_input)
+        return predicted_output
+
+# Example usage:
+# Input, output, and parameters
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+input_size = X.shape[1]
+hidden_size = 2
+output_size = 1
+# Create a neural network
+nn = NeuralNetwork(input_size, hidden_size, output_size)
+# Perform forward propagation
+predicted_output = nn.forward_propagation(X)
+print("Predicted Output:")
+print(predicted_output)
+
+
+
+//////////////////////////// Backward propagration/////////////////////////
+
+
+
+
+/////////////// Practical - 7////////////////
+import numpy as np
+
+class ARTNetwork:
+    def __init__(self, input_size, vigilance):
+        self.input_size = input_size
+        self.vigilance = vigilance
+        self.weights = np.zeros((input_size,1))
+
+    def train(self, input_data,epochs):
+        normalized_input = input_data / np.linalg.norm(input_data)
+        for _ in range(epochs):
+            similarity = normalized_input @ self.weights
+            if similarity.any() >= self.vigilance:
+                return
+            self.weights = np.maximum(self.weights, normalized_input)
+            normalized_input = self.weights / np.linalg.norm(self.weights)
+
+    def predict(self, input_data):
+        normalized_input = input_data / np.linalg.norm(input_data)
+        similarity = normalized_input @ self.weights
+        if similarity.any() >= self.vigilance:
+            output_pattern = np.zeros(len(similarity))
+            print(similarity)
+            winner = np.argmax(similarity)
+            output_pattern[winner] = 1
+        else:
+            output_pattern = np.zeros(len(similarity) + 1)
+            output_pattern[-1] = 1
+        return output_pattern
+
+# Usage example
+input_size = 4
+vigilance = 0.9
+art = ARTNetwork(input_size, vigilance)
+
+# Training data
+data = np.array([[1, 1, 0, 0],
+                 [0, 1, 0, 1],
+                 [0, 0, 1, 1],
+                 [1, 0, 1, 0]])
+
+# Train the ART network
+for sample in data:
+    art.train(sample,1000)
+
+# Test a new input
+new_input = np.array([0, -1, 0, 0])
+new_output = art.predict(new_input)
+print(new_output)
+
+
+
+////////////////////practical - 8 //////////////////////////
+
+
+#Write a python program to design a Hopfield Network which stores 4 vectors
+
+#Hebbian Rule
+
+import numpy as np 
+class HopfieldNetwork:
+    def __init__(self, n_neurons): 
+        self.weights = np.zeros((n_neurons, n_neurons))
+
+    def train(self, patterns):
+        for pattern in patterns:
+            self.weights += np.outer(pattern, pattern) 
+            np.fill_diagonal(self.weights, 0)
+
+    def predict(self, pattern):
+        energy = -0.5 * ((pattern @ self.weights) @ pattern) 
+        return np.sign((pattern @ self.weights) + energy)
+
+
+patterns = np.array([
+                [1, 1, -1, -1],
+                [-1, -1, 1, 1],
+                [1, -1, 1, -1],
+                [-1, 1, -1, 1]
+                ])
+n_neurons = 4
+
+network = HopfieldNetwork(n_neurons) 
+
+network.train(patterns)
+
+for pattern in patterns:
+    prediction = network.predict(pattern) 
+    print('Input pattern:', pattern) 
+    print('Predicted pattern:', prediction)
+
+
+////////////////////practical - 9 /////////////////////
+
+#How to train a neural network with Tensorflow / Pytorch and evaluation of logistic 
+#regression using tensorflow
+
+import tensorflow as tf 
+import numpy as np
+
+from keras.models import Sequential
+from keras.layers import Dense, Flatten
+from sklearn.model_selection import train_test_split 
+from sklearn.preprocessing import StandardScaler 
+from sklearn.datasets import load_breast_cancer 
+
+df=load_breast_cancer()
+# two classifications -- malignant / benign
+
+X_train,X_test,y_train,y_test=train_test_split(df.data,df.target,test_size=0.20,random_state=42) 
+
+sc=StandardScaler()
+X_train=sc.fit_transform(X_train)
+X_test=sc.transform(X_test)
+
+model=Sequential([
+    Flatten(input_shape=(X_train.shape[1],)),
+    Dense(1,activation='sigmoid')
+    ]) 
+
+model.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
+
+model.fit(X_train,y_train,epochs=5) 
+
+test_loss,test_accuracy = model.evaluate(X_test,y_test) 
+
+print("Test Loss: ",test_loss)
+print("accuracy is",test_accuracy)
+
+
+
+
+//////////////////// Practical 10 ////////////////////
+
+
+
+#MNIST Handwritten Character Detection using PyTorch, Keras and Tensorflow
+
+import tensorflow as tf
+from keras.datasets import mnist 
+from keras.models import Sequential
+from keras.layers import Dense, Flatten 
+
+# Load and preprocess the MNIST dataset
+(X_train, y_train), (X_test, y_test) = mnist.load_data() 
+
+#reshaping of input values
+X_train = X_train / 255.0   #(28,28)
+X_test = X_test / 255.0
+
+# Define the model architecture 
+model = Sequential([
+    Flatten(input_shape=(28, 28)), 
+    Dense(128, activation='relu'), 
+    Dense(10, activation='softmax')
+])
+
+# Compile the model 
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',  #multi class classification problems
+                metrics=['accuracy'])
+
+# Train the model
+model.fit(X_train, y_train, epochs=10, batch_size=64 )
+
+# Evaluate the model
+loss, accuracy = model.evaluate(X_test, y_test) 
+print(f"Test Loss: {loss}")
+print(f"Test Accuracy: {accuracy}")
+
+
